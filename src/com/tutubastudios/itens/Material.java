@@ -12,6 +12,7 @@ import com.tutubastudio.entities.Entity;
 import com.tutubastudio.entities.Player;
 import com.tutubastudio.graphics.Spritesheet;
 import com.tutubastudio.graphics.UI;
+import com.tutubastudio.graphics.Win;
 import com.tutubastudio.main.Game;
 import com.tutubastudio.main.Sound;
 import com.tutubastudio.world.Bau;
@@ -24,7 +25,7 @@ public class Material extends Entity{
 	public double peso;
 	public String tipo;
 	public boolean gived = false;
-	public static int itensTotais = 10;
+	public static int itensTotais = 11;
 	public static String nomeList[] = new String[itensTotais];
 	public static double pesoList[] = new double[itensTotais];
 	public static String tipoList[] = new String[itensTotais];
@@ -52,7 +53,7 @@ public class Material extends Entity{
 		nomeList[7] = "Penas";
 		nomeList[8] = "Frango";
 		//[9]GOLDKEY
-		
+		nomeList[10] = "Bolinho de Café";
 		pesoList[0] =  0;
 		pesoList[1] =  2;
 		pesoList[2] =  0;
@@ -61,6 +62,7 @@ public class Material extends Entity{
 		pesoList[5] =  2;
 		pesoList[7] =  0.1;
 		pesoList[8] =  2;
+		pesoList[10] =  0.2;
 		
 		tipoList[0] = "";
 		tipoList[1] = "Material";
@@ -70,7 +72,7 @@ public class Material extends Entity{
 		tipoList[5] = "Arma";
 		tipoList[7] = "Material";
 		tipoList[8] = "Consumivel";
-		
+		tipoList[10] = "Consumivel";
 	}
 	public void tick() {
 		
@@ -162,7 +164,13 @@ public class Material extends Entity{
 							}
 						}if(this.id == 8) {
 							if(insertSlots(this) == true) {
-								
+								Player.chiken++;
+								Game.entities.remove(this);
+							}
+							
+						}if(this.id == 10) {
+							if(insertSlots(this) == true) {
+								Player.cakeCoffe++;
 								Game.entities.remove(this);
 							}
 							
@@ -191,6 +199,26 @@ public class Material extends Entity{
 				//MANDAR O ID DO ITEM PARA O SLOT
 				UI.idItemSlot[j] = this.id;
 				System.out.println("Pegou o objeto de id: "+this.id+this.nome+" no slot "+j);
+				return true;	
+			}
+		}
+		return false;
+	}
+	public boolean receberItem(int id, int qnt) {
+		
+		
+		for(int j = 0; j < 16; j++) {
+			
+			if(UI.slotFree[j] == true && this.gived == false ) {
+				
+				//DIZER QUE OBJETO FOI PEGO
+				this.gived = true;
+				//DIZER QUE O SLOT DO OBJETO AGORA É TRAVADO
+				UI.slotFree[j] = false;	
+				//PEGAR QUAL POSIÇÃO DESENHAR				
+				UI.slot[j] = this.sprite;
+				//MANDAR O ID DO ITEM PARA O SLOT
+				UI.idItemSlot[j] = this.id;
 				return true;	
 			}
 		}
@@ -311,6 +339,27 @@ public class Material extends Entity{
 		
 		//Player.Buffs();
 	}
+	//METODO PRA RETIRAR ITEM DO IVENTARIO, PEGO O ID E A QUANTIDADE DE ITENS A SER RETIRADO
+	public static void deleteItem(int id, int qnt) {
+		int num = 0;
+		do {
+			for(int i = 0; i < 16; i++) {
+				if(UI.slotFree[i] == false) {
+					if(UI.idItemSlot[i] == id) {
+						UI.slotFree[i] = true;	
+						UI.slot[i] = null;
+						UI.idItemSlot[i] = 0;
+						num++;
+						if(num == qnt) {
+							break;
+						}
+						
+					}	
+				}
+			}	
+		}while(!(num <= qnt));
+		
+	}
 	public static void useItem(int id, int slot) {
 		boolean delete = false;
 		if(tipoList[id].equals("Consumivel")) {
@@ -410,6 +459,7 @@ public class Material extends Entity{
 		}else if(equipSlot == 3) {
 			if(buff[3] == true) {	
 				if(id == 5) {
+					Game.player.setActionRange(6,10,20,20);
 					maxLife[3] = 8;
 					maxDamageAttack[3] = 2;
 				}
@@ -420,7 +470,7 @@ public class Material extends Entity{
 			Game.player.maxLife = Game.player.maxLife + maxLife[i];
 			Game.player.maxMana = Game.player.maxMana + maxMana[i];
 			Player.attackDamage = Player.attackDamage + maxDamageAttack[i];
-			Player.speed = Player.speed + maxSpeed[i];
+			Game.player.speed = Game.player.speed + maxSpeed[i];
 		}
 		
 	}
@@ -452,5 +502,6 @@ public class Material extends Entity{
 		
 		
 	}
+	
 
 }

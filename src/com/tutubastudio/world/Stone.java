@@ -27,7 +27,7 @@ public class Stone extends Entity {
 	
 	public void destroySelf() {
 		Game.entities.remove(this);
-		Game.simpleTrees.remove(this);
+	
 	}
 	
 	public void CheckInterationsTree() {

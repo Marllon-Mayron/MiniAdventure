@@ -33,15 +33,15 @@ public class Enemy extends Entity {
 		depth = 2;
 		if (this.isColliddingWithPlayer() == false) {
 
-			if (x < Game.player.getX() && World.isFree((int) (x + speed), this.getY())) {
+			if (x < Game.player.getX() ) {
 				x += speed;
-			} else if (x > Game.player.getX() && World.isFree((int) (x - speed), this.getY())) {
+			} else if (x > Game.player.getX() ) {
 				x -= speed;
 			}
 
-			if (y < Game.player.getY() && World.isFree(this.getX(), (int) (y + speed))) {
+			if (y < Game.player.getY()) {
 				y += speed;
-			} else if (y > Game.player.getY() && World.isFree(this.getX(), (int) (y - speed))) {
+			} else if (y > Game.player.getY()) {
 				y -= speed;
 			}
 		} else {

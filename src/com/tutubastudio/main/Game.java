@@ -2,12 +2,14 @@ package com.tutubastudio.main;
 
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Label;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -32,13 +34,15 @@ import javax.swing.JFrame;
 import com.tutubastudio.entities.Enemy;
 import com.tutubastudio.entities.Entity;
 import com.tutubastudio.entities.Player;
+import com.tutubastudio.entities.npc.Messages;
+import com.tutubastudio.entities.npc.Missoes;
 import com.tutubastudio.graphics.Spritesheet;
 import com.tutubastudio.graphics.UI;
 import com.tutubastudio.graphics.Win;
 import com.tutubastudio.main.Sound.Clips;
-import com.tutubastudio.world.Biomes;
 import com.tutubastudio.world.Camera;
 import com.tutubastudio.world.OutsideObjects;
+import com.tutubastudio.world.Pixel;
 import com.tutubastudio.world.Stone;
 import com.tutubastudio.world.Tree;
 import com.tutubastudio.world.World;
@@ -58,8 +62,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	private Thread thread;
 	public static int redimensionar = 25;
 	
-	public static int WIDTH = (Toolkit.getDefaultToolkit().getScreenSize().width*redimensionar)/100; 
-	public static int HEIGHT = (Toolkit.getDefaultToolkit().getScreenSize().height*redimensionar)/100, SCALE = 10;
+	public static int WIDTH = 0, HEIGHT = 0, SCALE = 0;
 	
 	// Imagens e Gráficos
 	private int CUR_LEVEL = 1, MAX_LEVEL = 2;
@@ -71,20 +74,22 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	public static List<Entity> entities;
 	public static List<Entity> animals;
 	public static List<Enemy> enemies;
-	public static List<Tree> simpleTrees;
-	public static List<Stone> simpleStones;
 	public static List<OutsideObjects> outObject;
-	public static List<Biomes> biomes;
 	public static List<Material> itensMaterial;
 	public static List<Win> windowns;
+	public static List<Pixel> pixel;
+
 	//spritesheets
 	public static Spritesheet spritesheet;
 	public static Spritesheet spritesheetAnimations;
 	public static Spritesheet spritesheetMapa;
+	public static Spritesheet spritesheetLayer;
 	public static Spritesheet spritesheetPlayer;
 	public static Spritesheet spritesheetItens;
 	public static Spritesheet spritesheetAnimal;
-	
+	public static Spritesheet spritesheetState;
+	public static Spritesheet spritesheetNPC;
+	public static Spritesheet spritesheetCursor;
 	
 	public static World world;
 	public static Player player;
@@ -92,7 +97,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	public UI ui;
 	public Sound som;
 	public Win win;
+	public Messages mensagem;
 	public ImageEquiped imgEquip;
+
+
 	
 	
 	// Game State
@@ -102,8 +110,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	private boolean restartGame = false;
 	// Menu
 	public Menu menu;
-	public static int wt = Toolkit.getDefaultToolkit().getScreenSize().width;
-	public static int ht = Toolkit.getDefaultToolkit().getScreenSize().height;
+	
 	/***/
 
 	// Construtor
@@ -123,7 +130,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		initFrame();
 		//INICIALIZANDO OBJETOS
 		ui = new UI();
-		
+		mensagem = new Messages();
 		
 		
 		UI.foundSize();
@@ -135,26 +142,28 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		entities = new ArrayList<Entity>();
 		animals = new ArrayList<Entity>();
 		enemies = new ArrayList<Enemy>();
-		simpleTrees = new ArrayList<Tree>();
-		simpleStones = new ArrayList<Stone>();
 		outObject = new ArrayList<OutsideObjects>();
-		biomes = new ArrayList<Biomes>();
 		itensMaterial = new ArrayList<Material>();
 		windowns = new ArrayList<Win>();
-		
+		pixel = new ArrayList<Pixel>();
 		
 		//IMAGENS
-		spritesheet = new Spritesheet("/spritesheet.png");
-		spritesheetAnimations = new Spritesheet("/spritesheetAnimations.png");
-		spritesheetPlayer = new Spritesheet("/player.png");
-		spritesheetMapa = new Spritesheet("/mapa.png");
-		spritesheetItens = new Spritesheet("/spritesheetItens.png");
-		spritesheetAnimal = new Spritesheet("/spritesheetAnimals.png");
+		spritesheet = new Spritesheet("/image/spritesheet.png");
+		spritesheetAnimations = new Spritesheet("/image/spritesheetAnimations.png");
+		spritesheetPlayer = new Spritesheet("/image/player.png");
+		spritesheetMapa = new Spritesheet("/image/mapa.png");
+		spritesheetLayer = new Spritesheet("/image/mapaLayer1.png");
+		spritesheetItens = new Spritesheet("/image/spritesheetItens.png");
+		spritesheetAnimal = new Spritesheet("/image/spritesheetAnimals.png");
+		spritesheetState = new Spritesheet("/image/spritesheetState.png");
+		spritesheetNPC = new Spritesheet("/image/spritesheetNPC.png");
+		spritesheetCursor = new Spritesheet("/image/cursor0.png");
 		
 		player = new Player(0, 0, 16, 16, spritesheetPlayer.getSprite(64, 96, 32, 32));
 		entities.add(player);
 		
-		world = new World("/level1.png");
+		world = new World("/image/level1.png");
+
 		
 		//win.setMask(0, 0, 114, 80, 0,0,0,0);
 		
@@ -164,10 +173,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		
 		
 		menu = new Menu();
-		wt = Toolkit.getDefaultToolkit().getScreenSize().width/UI.wt;
-		ht = Toolkit.getDefaultToolkit().getScreenSize().height/UI.ht;
+		Missoes.textoMissoes();
 		//Material.adicionarItens();
 		imgEquip = new ImageEquiped();
+		Game.world.WorldColision("/image/teste.png");
 	}
 
 	// Criação da Janela
@@ -185,11 +194,18 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		Image imagem = null;
 		
 		try{
-			imagem = ImageIO.read(getClass().getResource("/icon.png"));
+			imagem = ImageIO.read(getClass().getResource("/image/icon.png"));
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+	 
+		Toolkit toolkit = Toolkit.getDefaultToolkit();
+		Image imageCursor = toolkit.getImage(getClass().getResource("/image/null.png"));
+		
+		Cursor c = toolkit.createCustomCursor(imageCursor, new Point(0,0), "img");
+		frame.setCursor(c);
 		frame.setIconImage(imagem);
+		
 	}
 
 	// Threads
@@ -216,13 +232,13 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 
 	// Ticks do Jogo
 	public void tick() {
-		//System.out.println(WIDTH);
+
 		imgEquip.tick();
+		mensagem.tick();
+		
 		if(UI.foundSize() == true) {
 			image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 		}
-		//System.out.println("Win"+Game.player.Winmx);
-		//System.out.println("Player"+Game.player.Winmy);
 		if (gameState == "NORMAL") {
 			for (int i = 0; i < entities.size(); i++) {
 				Entity e = entities.get(i);
@@ -278,20 +294,32 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		
 		g = image.getGraphics();// Renderizar imagens na tela
 		g.setColor(new Color(0, 0, 0));
-		g.fillRect(0, 0, WIDTH * SCALE, HEIGHT * SCALE);
+		//g.fillRect(0, 0, WIDTH * SCALE, HEIGHT * SCALE);
 
 		/* Render do jogo */
 		world.render(g);
+		
 		Collections.sort(entities, Entity.nodeSorter);
 		for (int i = 0; i < entities.size(); i++) {
 			Entity e = entities.get(i);
 			e.render(g);
+			
+		}
+		for (int i = 0; i < pixel.size(); i++) {
+			Pixel e = pixel.get(i);
+			//e.render(g);
+			
 		}
 		
 		
+		if(Messages.messageBallon == false) {
+			ui.renderUI(g);
+			ui.renderInventory(g);
+			ui.renderMission(g);
+		}
+		mensagem.render(g);
+
 		
-		/***/
-		ui.render(g);
 		g.dispose();// Limpar dados de imagem não usados
 		g = bs.getDrawGraphics();
 		
@@ -299,41 +327,15 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		//g.drawImage(image, 0, 0, WIDTH * SCALE, HEIGHT * SCALE, null);
 		
 		g.drawImage(image, 0, 0, Toolkit.getDefaultToolkit().getScreenSize().width, Toolkit.getDefaultToolkit().getScreenSize().height, null);
-		
-		g.setFont(new Font("arial", Font.BOLD, 17));
-		g.setColor(Color.white);
-		//g.drawString("Munição: " + player.ammo, 600, 40);
 		//NOME DO ITEM
-		if(UI.showDesc == true) {
-			Material item = new Material(0, 0, 16, 16, null);
-			item.id = UI.idItemTemp;
-			item.nome = Material.nomeList[item.id];
-			item.peso = Material.pesoList[item.id];
-			item.tipo = Material.tipoList[item.id];
-			g.setColor(Color.black);
-			if(item.id != 0) {
-				g.drawString("nome: "+item.nome, ((Win.Xinv+4)*wt), (Win.Yinv+13)*ht);
-				//g.drawString("preço: "+item.nome, ((Win.Xinv+4)*wt), (Win.Yinv+13)*ht);
-			}
-			
+		
+		if(Messages.messageBallon == false) {
+			ui.render2(g);
+		}for (int i = 0; i < entities.size(); i++) {
+			Entity e = entities.get(i);
+			e.render2(g);
 			
 		}
-		if(Game.player.openInventory == true) {
-			g.setColor(Color.yellow);
-			g.setFont(new Font("arial", Font.BOLD, 18));
-			g.drawString(": "+Player.key, ((Win.Xinv+85)*wt), (Win.Yinv+24)*ht);
-		}
-		
-		g.setColor(Color.black);
-		g.setFont(new Font("arial", Font.BOLD, 10));
-		g.drawString((int)Game.player.mana+"/"+(int)Game.player.maxMana, ((Game.WIDTH*13/100))*wt, ((Game.HEIGHT*11/100)+1)*ht);
-		
-		
-		g.setFont(new Font("arial", Font.BOLD, 17));
-		g.drawString((int)Game.player.life+"/"+(int)Game.player.maxLife, ((Game.WIDTH*15/100))*wt, ((Game.HEIGHT*8/100)+1)*ht);
-		g.setFont(new Font("arial", Font.BOLD, 20));
-		g.setColor(Color.YELLOW);
-		g.drawString(": "+Player.gold, ((Game.WIDTH*21/100))*wt, ((Game.HEIGHT*13/100))*ht);
 		// Game Over Configs
 		if (gameState == "GAME_OVER") {
 			Graphics2D g2 = (Graphics2D) g;
@@ -351,9 +353,13 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			menu.render(g);
 		}
 		
+		
 		bs.show();
 		
+		
 	}
+	
+	
 
 	// Controle de FPS
 	public void run() {
@@ -397,27 +403,90 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 	//PRESSIONAR A TECLA
 	public void keyPressed(KeyEvent e) {
 		// Esquerda e Direita
-		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
-			player.right = true;
+		
+			if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
+				
+					if(player.changeDir) {
+						if(player.down == true) {
+							player.sudeste = true;	
+							player.right = true;
+							
+						}if(player.up == true) {
+							player.nordeste = true;	
+							player.right = true;
+						}else {
+							
+							player.right = true;
+							
+						}
+					}
+				
+			}else if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
+				
+					if(player.changeDir) {
+						if(player.down == true) {
+							player.sudoeste = true;	
+							player.left = true;
+						}else if(player.up == true) {
+							player.noroeste = true;	
+							player.left = true;
+						}else {
+							player.left = true;
+						}
+						
+					}
+				
+				
+				
+				
+				
+			}if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
+				
+				
+					if(player.changeDir) {
+						if(player.right == true) {
+							player.nordeste = true;
+							player.up = true;
+						}else if(player.left == true){
+							player.noroeste = true;
+							player.up = true;
+						}else {
+							player.up = true;
+						}
+						
+					}
+				
+				
+				
+				if (gameState == "MENU") {
+					this.menu.up = true;
+				}
+
+			}else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
+				
+					if(player.changeDir) {
+						if(player.right == true) {
+							player.sudeste = true;
+							player.down = true;
+						}else if(player.left == true) {
+							player.sudoeste = true;
+							player.down = true;
+							
+						}else {
+							player.down = true;
+						}
+						
+					}
+					if (gameState == "MENU") {
+						this.menu.down = true;
+					}
+			}
+				
+				
+				
 			
-
-		} else if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
-			player.left = true;
-		}
-
-		// Cima e Baixo
-		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
-			player.up = true;
-			if (gameState == "MENU") {
-				this.menu.up = true;
-			}
-
-		} else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
-			player.down = true;
-			if (gameState == "MENU") {
-				this.menu.down = true;
-			}
-		}
+		
+		
 
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			gameState = "MENU";
@@ -431,31 +500,114 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			 }else {
 				 Game.player.openInventory = true;
 			 }
-		}if (e.getKeyCode() == KeyEvent.VK_E) {
-			 Player.interact = true;
+		}if (e.getKeyCode() == KeyEvent.VK_M) {
+			 if(Game.player.openMission == true) {
+				 Game.player.openMission = false;
+			 }else {
+				 Game.player.openMission = true;
+			 }
+		}if (e.getKeyCode() == KeyEvent.VK_E) {	
+						
+			
 		}
 		
 
+	}
+	public void back() {
+		if(player.dirBack == true) {
+			Player.dirBack(player, player.dirSave+1);
+			player.dirBack = false;
+		}
 	}
 	//SOLTAR TECLA===========================================================================================================================
 	public void keyReleased(KeyEvent e) {
 		// Esquerda e Direita
 		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D) {
-			player.right = false;
+			
+			if(player.sudeste == true) {
+				player.sudeste = false;
+				player.right = false;
+				if(Player.tecla == 0) {
+					back();
+				}
+				
+			}else if(player.nordeste == true) {
+				player.nordeste = false;
+				player.right = false;
+				if(Player.tecla == 0) {
+					back();
+				}
+				
+			}else if(player.nordeste == false && player.sudeste == false){
+				player.right = false;
+				if(Player.tecla == 0) {
+					back();
+				}
+				
+				
+			}
+			
 			
 
 		} else if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A) {
-			player.left = false;
+			if(player.sudoeste == true) {
+				player.sudoeste = false;
+				player.left = false;
+				if(Player.tecla == 1) {
+					back();
+				}
+			}else if(player.noroeste == true) {
+				player.noroeste = false;
+				player.left = false;
+				if(Player.tecla == 1) {
+					back();
+				}
+			}else if(player.noroeste == false && player.sudoeste == false){
+				player.left = false;
+				if(Player.tecla == 1) {
+					back();
+				}
+			}
 			
 		}
 
 		// Cima e Baixo
 		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_W) {
-			player.up = false;
 			
+			if(player.nordeste == true) {
+				player.nordeste = false;
+				player.up = false;
+				back();
+			}else if(player.noroeste == true) {
+				player.noroeste = false;
+				player.up = false;
+				back();
+			}
+			else if(player.nordeste == false && player.noroeste == false){
+				player.up = false;
+				back();
+			}
+
 
 		} else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
-			player.down = false;
+			
+			if(player.sudeste == true) {
+				player.sudeste = false;
+				player.down = false;
+				back();
+			}else if(player.sudoeste) {
+				player.sudoeste = false;
+				player.down = false;
+				back();
+			}
+			else if(player.sudeste == false && player.sudoeste == false){
+				player.down = false;
+				back();
+				
+			}
+				
+			
+			
 			
 		}
 
@@ -464,9 +616,11 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 			if (gameState == "MENU") {
 				this.menu.enter = true;
 			}
-		}if (e.getKeyCode() == KeyEvent.VK_E) {
-			 Player.interact = false;
+		}if (e.getKeyCode() == KeyEvent.VK_E) {	
 			
+			Player.interact = true;
+			
+
 		}
 
 	}
@@ -497,22 +651,44 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		
 		//INVENTARIO
 		if(e.getButton() ==  MouseEvent.BUTTON1) {
-			//System.out.println("clicando esquerdo");
-			Game.player.actionClick = true;
+			if(Game.player.openMission == true) {
+				if(UI.mouseDragged == false) {
+					UI.winClik = false;
+				}
+				
+			}
+			
+			if(Game.player.openInventory == true || Game.player.openMission == true) {
+				if(Game.player.openMission == true &&((Game.player.Winmy > Win.Ymis+5) && (Game.player.Winmy < Win.Ymis + 98)) && ((Game.player.Winmx > Win.Xmis) && (Game.player.Winmx < Win.Xmis + 164))) {
+					
+				}else if(Game.player.openMission == true && ((Game.player.Winmy > Win.Yinv+5) && (Game.player.Winmy < Win.Yinv + 98)) && ((Game.player.Winmx > Win.Xinv) && (Game.player.Winmx < Win.Xinv + 164))){
+					if(Game.player.openMission == true) {
+						
+					}
+				}else {
+					Game.player.actionClick = true;
+				}
+			}else {
+				Game.player.actionClick = true;
+			}
+			
+				
+			
+			
+			
+			
 			//AO CLICAR NO "X"---------------------------------------------------------------------------------------------------------------
 			UI.mouseDragged = true;
 			if((Game.player.Winmy >= Win.Yinv ) && (Game.player.Winmy <= Win.Yinv + 7)) {
 				if((Game.player.Winmx >= Win.Xinv+156) && (Game.player.Winmx <= Win.Xinv + 164))
 					Game.player.openInventory = false;
 			}
-			//NÃO ESTAR NA TELA PRA ATACAR-------------------------------------------------------------------------------------------
-			if(Game.player.openInventory == true) {
-				if(((Game.player.Winmy > Win.Yinv+5) && (Game.player.Winmy < Win.Yinv + 125)) && ((Game.player.Winmx > Win.Xinv) && (Game.player.Winmx < Win.Xinv + 164))) {
-					
-				}else {
-					
-				}
+			
+			if((Game.player.Winmy >= Win.Ymis ) && (Game.player.Winmy <= Win.Ymis + 7)) {
+				if((Game.player.Winmx >= Win.Xmis+156) && (Game.player.Winmx <= Win.Xmis + 164))
+					Game.player.openMission = false;
 			}
+			//NÃO ESTAR NA TELA PRA ATACAR-------------------------------------------------------------------------------------------
 			//-----------------------------------------------------------------------------------------------------------------------
 			if((Game.player.Winmy >= Win.Yinv + 5) && (Game.player.Winmy <= Win.Yinv + 20)) {
 				if((Game.player.Winmx >= Win.Xinv) && (Game.player.Winmx <= Win.Xinv + 156)) {
@@ -520,11 +696,20 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 						
 					}else {
 						Win.invLokc = false;
+						
+					}
+				}
+			}if((Game.player.Winmy >= Win.Ymis + 5) && (Game.player.Winmy <= Win.Ymis + 20)) {
+				if((Game.player.Winmx >= Win.Xmis) && (Game.player.Winmx <= Win.Xmis + 156)) {
+					if(Win.missionLokc == false) {
+						
+					}else {
+						Win.missionLokc = false;
+						
+						
 					}
 				}
 			}
-			
-			
 			
 			
 		}else if(e.getButton() ==  MouseEvent.BUTTON3) {
@@ -547,6 +732,10 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		//AO SOLTAR ALGUM BOTÃO DO MOUSE
 		if(e.getButton() ==  MouseEvent.BUTTON1) {
 			//System.out.println("clicando esquerdo");
+			if(Game.player.openMission == true) {
+				UI.winClik = true;
+			}
+			
 			if(UI.mouseDragged == true && UI.change == true) {
 				
 				
@@ -558,6 +747,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 				
 				
 			}
+			
 		}else if(e.getButton() ==  MouseEvent.BUTTON3) {
 			//System.out.println("clicando direito");
 			UI.useItem = false;
@@ -565,7 +755,7 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		
 		UI.mouseDragged = false;
 		Win.invLokc = true;	
-		
+		Win.missionLokc = true;	
 		
 		
 	}
@@ -587,13 +777,20 @@ public class Game extends Canvas implements Runnable, KeyListener, MouseListener
 		
 		
 		if(Game.player.openInventory == true && Win.invLokc == false) {
-			if(Game.player.Winmy > 4 && Game.player.Winmy < 163) {
-				
+			if(Game.player.Winmy > 4 && Game.player.Winmy < 200) {
+				Win.missionLokc = true;
 				Win.Xinv = (e.getX()/(Toolkit.getDefaultToolkit().getScreenSize().width/WIDTH)-78);
 				Win.Yinv = (e.getY()/(Toolkit.getDefaultToolkit().getScreenSize().height/HEIGHT)-5);
 				
 			}
 			
+		}
+		if(Game.player.openMission == true && Win.missionLokc == false) {
+			if(Game.player.Winmy > 4 && Game.player.Winmy < 200) {
+				Win.invLokc = true;
+				Win.Xmis = (e.getX()/(Toolkit.getDefaultToolkit().getScreenSize().width/WIDTH)-78);
+				Win.Ymis = (e.getY()/(Toolkit.getDefaultToolkit().getScreenSize().height/HEIGHT)-5);
+			}
 		}
 	}
 	

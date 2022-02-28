@@ -8,7 +8,10 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Double;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Comparator;
+
+import javax.imageio.ImageIO;
 
 import com.tutubastudio.entities.Entity;
 import com.tutubastudio.graphics.Win;
@@ -16,6 +19,8 @@ import com.tutubastudio.main.Game;
 import com.tutubastudio.world.Camera;
 import com.tutubastudio.world.Stone;
 import com.tutubastudio.world.Tree;
+import com.tutubastudio.world.World;
+
 import com.tutubastudios.itens.Material;
 
 public class Entity {
@@ -28,40 +33,38 @@ public class Entity {
 	public static BufferedImage BAU_OBJ = Game.spritesheet.getSprite(96, 16, 16, 16);
 	public static BufferedImage CRATE_OBJ = Game.spritesheet.getSprite(0, 32, 16, 16);
 	
-	public static BufferedImage FANCEWOOD_down_OBJ1 = Game.spritesheet.getSprite(144, 32, 16, 16);
-	public static BufferedImage FANCEWOOD_down_OBJ2s = Game.spritesheet.getSprite(160, 32, 16, 16);
-	public static BufferedImage FANCEWOOD_down_OBJ2 = Game.spritesheet.getSprite(144, 16, 16, 16);
-	public static BufferedImage FANCEWOOD_down_OBJ3 = Game.spritesheet.getSprite(176, 32, 16, 16);
-	public static BufferedImage FANCEWOOD_left_OBJ1 = Game.spritesheet.getSprite(208, 48, 16, 16);
-	public static BufferedImage FANCEWOOD_left_OBJ2 = Game.spritesheet.getSprite(208, 64, 16, 16);
-	public static BufferedImage FANCEWOOD_left_OBJ3 = Game.spritesheet.getSprite(208, 80, 16, 16);
-	public static BufferedImage FANCEWOOD_right_OBJ1 = Game.spritesheet.getSprite(192, 48, 16, 16);
-	public static BufferedImage FANCEWOOD_right_OBJ2 = Game.spritesheet.getSprite(192, 64, 16, 16);
-	public static BufferedImage FANCEWOOD_right_OBJ3 = Game.spritesheet.getSprite(192, 80, 16, 16);
-	public static BufferedImage FANCEWOOD_DIAGONAL_OBJ = Game.spritesheet.getSprite(176, 48, 16, 16);
-	public static BufferedImage FANCEWOOD_leftCORNER_OBJ = Game.spritesheet.getSprite(192, 32, 16, 16);
-	public static BufferedImage FANCEWOOD_rightCORNER_OBJ = Game.spritesheet.getSprite(208, 32, 16, 16);
+	public static BufferedImage CASA1_OBJ = Game.spritesheet.getSprite(0, 240, 112, 80);
+	public static BufferedImage PIT_OBJ = Game.spritesheet.getSprite(0, 208, 48, 32);
 	
 	
+	private boolean add = false;
 	// Posição da Arma
-	public static BufferedImage MAPA_MP = Game.spritesheetMapa.getSprite(0, 0, 320, 320);
+	public static BufferedImage MAPA_MP = Game.spritesheetMapa.getSprite(0, 0, 432, 320);
+	public static BufferedImage LAYER_MP = Game.spritesheetLayer.getSprite(0, 0, 320, 320);
 	//VARIAVEIS PADRÃO PARA TODAS ENTIDADES DO JOGO
-	protected double x;
-	protected double y;
+	public double x;
+	public double y;
 	protected int width;
 	protected int height;
 	public int depth;
-
 	protected BufferedImage sprite;
 	//VALORES DE UMA HITBOX
 	protected int maskxBiome, maskyBiome, mwidthBiome, mheightBiome;
-	protected int maskx, masky, mwidth, mheight;
-	protected double startX, startY, finalX, finalY;
-	protected double startDepthX, startDepthY, finalDepthX, finalDepthY;
-	protected int maskx2, masky2, mwidth2, mheight2;
-	protected boolean hasLine = false;
-	protected boolean hasLineDepth = false;
-	
+	public int maskx;
+	public int masky;
+	public int mwidth;
+	public int mheight;
+	public double startX, startY, finalX, finalY;
+	public double startDepthX, startDepthY, finalDepthX, finalDepthY;
+	public int maskx2;
+	public int masky2;
+	public int mwidth2;
+	public int mheight2;
+	public boolean hasLine = false;
+	public boolean hasLineDepth = false;
+	public boolean right, up, left, down, sudeste, sudoeste, noroeste, nordeste;
+	public int dir, dirSave, right_dir = 0, left_dir = 1, up_dir = 2, down_dir = 3, sudeste_dir = 4, sudoeste_dir = 5, noroeste_dir = 6, nordeste_dir = 7;
+	public boolean dirBack = false;
 	private boolean addAllItens = false;
 	
 	
@@ -71,6 +74,7 @@ public class Entity {
 	public int depthX, depthY,mwidthDepth,mheightDepth, depthX2, depthY2,mwidthDepth2, mheightDepth2;
 	//VALORES DE UM RANGE DE AÇÃO 
 	public int actionRangeX, actionRangeY, actionRangeWidth, actionRangeHeight;
+	public double speed;
 	public Entity(int x, int y, int width, int height, BufferedImage sprite) {
 		this.x = x;
 		this.y = y;
@@ -94,9 +98,6 @@ public class Entity {
 		this.startDepthX = 0;
 		this.startDepthY = 0;
 		this.hasLineDepth = false;
-		
-		
-		
 		
 		
 		
@@ -174,46 +175,143 @@ public class Entity {
 		}
 		
 	};
-	public static void isColliddingWithObjects() {
-		if(Game.player.right == true) {
-			Game.player.x -= Player.speed;
-			
-		}else if(Game.player.left == true) {
-			Game.player.x += Player.speed;
-				
-		}if(Game.player.up == true) {
-			Game.player.y += Player.speed;
-			
-		}else if(Game.player.down == true) {
-			Game.player.y -= Player.speed;
-			
+	
+	public static void isColliddingWithObjects(Entity en) {
+		if(en.sudeste == true) {
+			 en.y -= en.speed;
+			 en.x -= en.speed;
+		 }else if(en.sudoeste == true) {
+			 en.y -= en.speed;
+			 en.x += en.speed;
+		 }else if(en.noroeste == true) {
+			 en.y += en.speed;
+			 en.x += en.speed;
+		 }else if(en.nordeste == true) {
+			 en.y += en.speed;
+			 en.x -= en.speed;
+		 }else if(en.right == true) {
+			 en.x -= en.speed; 
+		 }else if(en.left == true) {
+			 en.x += en.speed;
+		 }else if(en.up == true) {
+			 en.y += en.speed;
+		 }else if(en.down == true) {
+			 en.y -= en.speed;
+		 }
+		 
+	}
+	public static void dirBack(Entity en, int dir) {
+		if(dir == 1) {
+			 en.x -= en.speed;
+		 }else if(dir == 2) {
+			 en.x += en.speed;
+		 }else if(dir == 3) {
+			 en.y += en.speed;		
+		 }else if(dir == 4) {
+			 en.y -= en.speed;
+		 }else if(dir == 5) {
+			 en.y -= en.speed;
+			 en.x -= en.speed; 
+		 }else if(dir == 6) {
+			 en.y -= en.speed;
+			 en.x += en.speed; 
+		 }else if(dir == 7) {
+			 en.x += en.speed; 
+			 en.y += en.speed;
+		 }else if(dir == 8) {
+			 en.x -= en.speed; 
+			 en.y += en.speed;
+		 }
+	}
+	
+	public static void tchikenColliddingWithObjects(Chiken tchik) {
+		for(int i = 0; i < Game.entities.size(); i++) {
+			Entity en = Game.entities.get(i);
+			if(en instanceof Chiken) {
+				if(en == tchik) {
+					if(tchik.dir == tchik.right_dir) {
+						tchik.x -= tchik.speed;
+						tchik.stateNum =0;
+					}else if(tchik.dir == tchik.left_dir) {
+						tchik.x += tchik.speed;
+						tchik.stateNum =0;	
+					}if(tchik.dir == tchik.up_dir) {
+						tchik.y += tchik.speed;
+						tchik.stateNum =0;
+					}else if(tchik.dir == tchik.down_dir) {
+						tchik.y -= tchik.speed;
+						tchik.stateNum =0;
+					}
+					
+				}
+			}
 		}
-	}public static void isPushObjects(Entity e) {
+	}
+	public boolean predictCollision(Entity e1, double x , double y) {
+		Rectangle e1Mask = new Rectangle(e1.getX() + e1.maskx + (int)x, e1.getY() + e1.masky + (int)y, e1.mwidth, e1.mheight);
+		for (int i = 0; i < Game.entities.size(); i++) {
+			
+			Entity e = Game.entities.get(i);
+
+			if (e == Game.player) {
+				continue;
+			}
+			if (e == this) {
+				continue;
+			}if(e instanceof Material) {
+				continue;
+			}
+			
+			Rectangle eMask = new Rectangle(e.getX() + e.maskx, e.getY() + e.masky, e.mwidth, e.mheight);
+			Rectangle eMask2 = new Rectangle(e.getX() + e.maskx2, e.getY() + e.masky2, e.mwidth2, e.mheight2);
+		
+			if( e1Mask.intersects(eMask) || e1Mask.intersects(eMask2)) {
+				return true;
+				
+			}
+		}
+		return false;
+	}
+	public static void isPushObjects(Entity e) {
 		
 		if(Game.player.right == true) {
 			
-			double temp = Game.random.nextInt(4) + e.y;
-			Game.player.x -= Player.speed/2;
-			e.x = e.x + 5; 
-			e.y = temp;
+			double temp = Game.random.nextInt(4);
+			if(e.predictCollision(e, 5, temp) == false) {
+				Game.player.x -= Game.player.speed/2;
+				e.x = e.x + 5; 
+				e.y = e.y + temp;
+			}
+			
 			
 		}else if(Game.player.left == true) {
-			double temp = Game.random.nextInt(4) + e.y;
-			Game.player.x += Player.speed/2;
-			e.x = e.x - 5; 
-			e.y = temp;
+			double temp = Game.random.nextInt(4);
+			if(e.predictCollision(e, -5, temp) == false) {
+				Game.player.x += Game.player.speed/2;
+				e.x = e.x - 5; 
+				e.y = e.y + temp;
+			}
+			
 				
 		}if(Game.player.up == true) {
-			double temp = Game.random.nextInt(4) + e.x;
-			Game.player.y += Player.speed - 0.5;
-			e.y = e.y - 5; 
-			e.x = temp;
+			double temp = Game.random.nextInt(4);
+			if(e.predictCollision(e, temp, -5) == false) {
+				Game.player.y += Game.player.speed - 0.5;
+				e.y = e.y - 5;
+				e.x = e.x + temp;
+			}
+			 
+			
 			
 		}else if(Game.player.down == true) {
-			double temp = Game.random.nextInt(4) + e.x;
-			e.y = e.y + 5; 
-			Game.player.y -= Player.speed - 0.5;
-			e.x = temp;
+			double temp = Game.random.nextInt(4);
+			if(e.predictCollision(e, temp, 5) == false) {
+				e.y = e.y + 5; 
+				e.x = e.x + temp;
+				Game.player.y -= Game.player.speed - 0.5;
+			}
+			
+			
 		}
 	}
 	public int getDepth() {
@@ -272,7 +370,7 @@ public class Entity {
 		return e1Mask.intersects(e2Mask);
 	}public static boolean isColliddingMaskRange(Entity e1, Entity e2) {
 		Rectangle e1Mask = new Rectangle(e1.getX() + e1.maskx, e1.getY() + e1.masky, e1.mwidth, e1.mheight);
-		Rectangle e2Mask = new Rectangle(e2.getX() + e2.actionRangeX, e2.getY() + e2.actionRangeY, e2.actionRangeWidth, e2.actionRangeHeight);
+		Rectangle e2Mask = new Rectangle(e2.getX() + e2.actionRangeX , e2.getY() + e2.actionRangeY, e2.actionRangeWidth, e2.actionRangeHeight);
 
 		return e1Mask.intersects(e2Mask);
 	}
@@ -302,11 +400,23 @@ public class Entity {
 		
 
 		if( e1Mask.intersects(e2Mask) || e1Mask.intersects(e2Mask2)) {
+			
 			return true;
 		}else {
 			return false;
 		}
 	}
+	public static boolean isColliddingCoordenate(Entity e1, int x , int y) {
+		Rectangle e1Mask = new Rectangle(e1.getX() + e1.maskx, e1.getY() + e1.masky, e1.mwidth, e1.mheight);
+		Rectangle e2Mask = new Rectangle(x, y, 1, 1);
+		if( e1Mask.intersects(e2Mask)) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+
+	
 	//OBJETOS COM LINHAS
 	public static boolean isColliddingLine(Entity e1, Entity e2) {
 		Rectangle e1Mask = new Rectangle(e1.getX() + e1.maskx, e1.getY() + e1.masky, e1.mwidth, e1.mheight);
@@ -339,7 +449,6 @@ public class Entity {
 	
 	
 	
-	
 
 	public void render(Graphics g) {
 		g.setColor(Color.red);
@@ -350,6 +459,22 @@ public class Entity {
 		
 		//g.fillRect(this.getX() + maskxBiome - Camera.x, this.getY()+ maskyBiome - Camera.y, mwidthBiome, mheightBiome);
 		//g.fillRect(this.getX() + maskx2 - Camera.x, this.getY()+ masky2 - Camera.y, mwidth2, mheight2);
+		for (int i = 0; i < Game.entities.size(); i++) {
+			Entity e = Game.entities.get(i);
+			if(e instanceof Chiken) {
+				
+			}else {
+				//g.setColor(Color.red);
+				//g.fillRect(e.getX() + e.depthX - Camera.x, e.getY()+e.depthY - Camera.y, e.mwidthDepth, e.mheightDepth);
+				//g.setColor(Color.blue);
+				//g.fillRect(e.getX() + e.maskx - Camera.x, e.getY() + e.masky - Camera.y, e.mwidth, e.mheight);
+				//g.fillRect(e.getX() + e.actionRangeX - Camera.x, e.getY()+ e.actionRangeY  - Camera.y, e.actionRangeWidth, e.actionRangeHeight);
+			}
+			
+			// g.drawLine((int)(this.getX()  + startX- Camera.x), (int)(this.getY()+ startY - Camera.y), (int)(this.getX()+finalX- Camera.x), (int)(this.getY()+finalY- Camera.y));
+			
+			
+		}
 		g.drawImage(sprite, this.getX() - Camera.x, this.getY() - Camera.y, null);
 		if(this.hasLine == true) {
 			g.drawLine((int)(this.getX()  + startX- Camera.x), (int)(this.getY()+ startY - Camera.y), (int)(this.getX()+finalX- Camera.x), (int)(this.getY()+finalY- Camera.y));
@@ -357,17 +482,16 @@ public class Entity {
 			
 		}
 		
-			for (int i = 0; i < Game.entities.size(); i++) {
-				Entity e = Game.entities.get(i);
-				//g.fillRect(e.getX() + e.maskx - Camera.x, e.getY() + e.masky - Camera.y, e.mwidth, e.mheight);
-				// g.drawLine((int)(this.getX()  + startX- Camera.x), (int)(this.getY()+ startY - Camera.y), (int)(this.getX()+finalX- Camera.x), (int)(this.getY()+finalY- Camera.y));
-				
-				
-			}
+			
 			
 		
 		
 		
+		
+	}
+
+	public void render2(Graphics g) {
+		// TODO Auto-generated method stub
 		
 	}
 }

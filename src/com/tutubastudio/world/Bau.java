@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 
 import com.tutubastudio.entities.Entity;
 import com.tutubastudio.entities.Player;
-import com.tutubastudio.entities.Tchiken;
+import com.tutubastudio.entities.Chiken;
 import com.tutubastudio.graphics.UI;
 import com.tutubastudio.main.Game;
 import com.tutubastudio.main.Sound;
@@ -102,11 +102,12 @@ public class Bau extends Entity{
 		for(int i = 0; i < Game.entities.size(); i++) {
 			Entity e = Game.entities.get(i);
 			if(e instanceof Player) {
-				if(Bau.isColliddingActionRange(this, e)) {
-					if(Tchiken.isChooseObject(this, Game.player)) {
+				if(Bau.isColliddingMaskRange(e, this)) {
+					if(Chiken.isChooseObject(this, Game.player)) {
 						this.selected = true;
 						if(Player.interact == true) {
 							if(Player.key > 0) {
+								Player.interact = false;
 								if(isOpen == false) {
 									Sound.insertKey.play(Sound.volume);	
 									//CRIO UMA TRHED SÓ PARA ESPERAR O TEPO CERTO DE ABRIR O BAU

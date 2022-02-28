@@ -52,8 +52,8 @@ public class ImageEquiped {
 	public ImageEquiped() {
 		
 		// TODO Auto-generated constructor stub
-		EquipedHelmet = new Spritesheet("/spritesheetEquiped.png");
-		EquipedWeapon = new Spritesheet("/EquipedArmas.png");
+		EquipedHelmet = new Spritesheet("/image/spritesheetEquiped.png");
+		EquipedWeapon = new Spritesheet("/image/EquipedArmas.png");
 		System.out.println("aa");
 		
 		

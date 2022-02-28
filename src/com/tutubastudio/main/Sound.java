@@ -97,10 +97,12 @@ public class Sound {
 	public static Clips baterMadeira = load("/audio/treeCut.wav",1);
 	public static Clips openChest = load("/audio/openChest.wav",1);
 	public static Clips insertKey = load("/audio/keyChest.wav",1);
+	public static Clips bush = load("/audio/bush.wav",1);
 	//musicas 
 	public static Clips music = load("/audio/sound1.wav",1);
 	public static Clips boss = load("/audio/boss1.wav",1);
 	public static Clips forest = load("/audio/forest.wav",1);
+	
 	
 	private static Clips load(String name,int count) {
 		try {

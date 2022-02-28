@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 
 import com.tutubastudio.entities.Entity;
 import com.tutubastudio.entities.Player;
-import com.tutubastudio.entities.Tchiken;
+import com.tutubastudio.entities.Chiken;
 import com.tutubastudio.graphics.UI;
 import com.tutubastudio.main.Game;
 import com.tutubastudio.main.Sound;
@@ -41,7 +41,7 @@ public class Crate extends Entity{
 		
 	}
 	public void tick() {
-		
+
 		if(drop == true) {
 			drop = false;
 		}
@@ -113,10 +113,11 @@ public class Crate extends Entity{
 		for(int i = 0; i < Game.entities.size(); i++) {
 			Entity e = Game.entities.get(i);
 			if(e instanceof Player) {
-				if(Crate.isColliddingActionRange(this, e)) {
-					if(Tchiken.isChooseObject(this, Game.player)) {
+				if(Crate.isColliddingMaskRange(this, e)) {
+					if(Chiken.isChooseObject(this, Game.player)) {
 						this.selected = true;
 						if(Player.action == true ) {
+							
 							if(isBrake == false) {
 								Sound.brokenCrate.play(Sound.volume);
 								
@@ -124,12 +125,17 @@ public class Crate extends Entity{
 							
 							isBrake = true;
 							
+						}else {
+							
 						}
+						
 					}else {
 						this.selected = false;
+						
 					}	
 				}else {
 					this.selected = false;
+					
 				}
 				
 			}
